@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch file",
+      "name": "Launch input-short.txt",
       "type": "go",
       "request": "launch",
       "mode": "debug",
@@ -13,6 +13,17 @@
       "cwd": "${fileDirname}",
       "args": [
         "input-short.txt"
+      ]
+    },
+    {
+      "name": "Launch input.txt",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${file}",
+      "cwd": "${fileDirname}",
+      "args": [
+        "input.txt"
       ]
     }
   ]
