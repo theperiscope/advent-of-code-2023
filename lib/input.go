@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 // returns program name
@@ -47,4 +48,13 @@ func ReadInput(fileName string) (input []string, err error) {
 	}
 
 	return input, nil
+}
+
+// converts string to int and panics on error (useful for slice conversions)
+func Atoi(s string) int {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		panic(err)
+	}
+	return n
 }

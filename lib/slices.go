@@ -62,13 +62,17 @@ func Values[T comparable, V any](items map[T]V) []V {
 	return values
 }
 
-// Converts a slice of items of type T to type V using a mapping function.
-func Convert[T, V any](items []T, mapper func(T) V) []V {
+// Converts a slice of items of type T to type V using a mapping function. Stops on first error and returns nil.
+func Convert[T, V any](items []T, mapper func(T) (V, error)) ([]V, error) {
 	result := make([]V, len(items))
 
 	for i, t := range items {
-		result[i] = mapper(t)
+		v, err := mapper(t)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = v
 	}
 
-	return result
+	return result, nil
 }
