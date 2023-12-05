@@ -43,10 +43,5 @@ func main() {
 		}
 	}
 	fmt.Printf("Sum Part 1: %d\n", sum)
-
-	sum2 := 0
-	for _, v := range copies {
-		sum2 += v
-	}
-	fmt.Printf("Sum Part 2: %d\n", sum2)
+	fmt.Printf("Sum Part 2: %d\n", lib.Sum(copies...))
 }

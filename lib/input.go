@@ -8,10 +8,12 @@ import (
 	"path/filepath"
 )
 
+// returns program name
 func GetProgramName() string {
 	return filepath.Base(os.Args[0])
 }
 
+// asserts exactly one program argument is used and exits otherwise
 func AssertArgs() {
 	argsWithoutProg := os.Args[1:]
 	if len(argsWithoutProg) != 1 {
@@ -20,6 +22,7 @@ func AssertArgs() {
 	}
 }
 
+// asserts input lines are read from first command line argument and logs/exit otherwise
 func AssertInput() []string {
 	lines, err := ReadInput(os.Args[1])
 	if err != nil {
@@ -28,16 +31,7 @@ func AssertInput() []string {
 	return lines
 }
 
-func Filter(input []string, f func(string) bool) []string {
-	filtered := make([]string, 0)
-	for _, v := range input {
-		if f(v) {
-			filtered = append(filtered, v)
-		}
-	}
-	return filtered
-}
-
+// reads line-by-line input from specified file
 func ReadInput(fileName string) (input []string, err error) {
 	f, err := os.Open(fileName)
 	if err != nil {

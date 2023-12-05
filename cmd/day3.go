@@ -50,7 +50,7 @@ func main() {
 	}
 	for row, _ := range data {
 		for _, s := range symbols {
-			if !(absInt(row, s.row) <= 1) {
+			if !(lib.AbsDiff(row, s.row) <= 1) {
 				continue
 			}
 			ns := data[row]
@@ -115,18 +115,11 @@ type numberSymbol struct {
 type dataRows map[int]numberSymbol
 
 func isValidEnginePart(n number, s symbol) bool {
-	if !(absInt(n.row, s.row) <= 1) { // not on same or neighboring row
+	if !(lib.AbsDiff(n.row, s.row) <= 1) { // not on same or neighboring row
 		return false
 	}
 	if !(s.pos >= n.from-1 && s.pos <= n.to+1) { // outside expected column index range
 		return false
 	}
 	return true
-}
-
-func absInt(x, y int) int {
-	if x < y {
-		return y - x
-	}
-	return x - y
 }
