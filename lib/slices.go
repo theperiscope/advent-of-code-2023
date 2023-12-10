@@ -62,6 +62,16 @@ func Values[T comparable, V any](items map[T]V) []V {
 	return values
 }
 
+func Invert[T comparable, V comparable](items map[T]V) map[V][]T {
+	result := map[V][]T{}
+
+	for key, value := range items {
+		result[value] = append(result[value], key)
+	}
+
+	return result
+}
+
 // Converts a slice of items of type T to type V using a mapping function. Stops on first error and returns nil.
 func Convert[T, V any](items []T, mapper func(T) (V, error)) ([]V, error) {
 	result := make([]V, len(items))
