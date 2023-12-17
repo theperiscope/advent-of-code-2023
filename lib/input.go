@@ -32,6 +32,18 @@ func AssertInput() []string {
 	return lines
 }
 
+func AssertInputByteGrid() [][]byte {
+	rows, err := ReadInput(os.Args[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	byteSlices := make([][]byte, len(rows))
+	for i, str := range rows {
+		byteSlices[i] = []byte(str)
+	}
+	return byteSlices
+}
+
 // reads line-by-line input from specified file
 func ReadInput(fileName string) (input []string, err error) {
 	f, err := os.Open(fileName)

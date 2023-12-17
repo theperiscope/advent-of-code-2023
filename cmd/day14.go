@@ -11,18 +11,13 @@ import (
 
 func main() {
 	lib.AssertArgs()
-	rows := lib.AssertInput()
-
-	byteSlices := make([][]byte, len(rows))
-	for i, str := range rows {
-		byteSlices[i] = []byte(str)
-	}
-	dish := Dish(byteSlices)
+	grid := lib.AssertInputByteGrid()
+	dish := Dish(grid)
 	dish.TiltNorth()
 	fmt.Println(dish.NorthSupportBeamsLoad())
 
 	hashMap := map[string][]int{} // values are loop indexes when particular hash occurred (last only used)
-	dish2 := Dish(byteSlices)
+	dish2 := Dish(grid)
 	N := 1_000_000_000
 	for i := 0; i < N; i++ {
 		dish2.TiltNorth()
