@@ -35,6 +35,19 @@ func (i *Interval) Split(point int64) []Interval {
 	return []Interval{{Start: i.Start, End: point - 1}, {Start: point, End: i.End}}
 }
 
+func (i *Interval) Clone() *Interval {
+	return &Interval{Start: i.Start, End: i.End}
+}
+
+func (i *Interval) Len() int64 {
+	if i.End > i.Start {
+		return i.End - i.Start + 1
+	} else if i.Start > i.End {
+		return i.Start - i.End + 1
+	}
+	return 0
+}
+
 func (i *Interval) Compare(other Interval) int {
 	if i.Start < other.Start {
 		return -1
