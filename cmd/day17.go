@@ -6,200 +6,135 @@ import (
 	"AOC/lib"
 	"container/heap"
 	"fmt"
-	"math"
-	"strconv"
-	"strings"
-	"time"
-	"unsafe"
 )
-
-type grid [][]int
-
-func (g *grid) Print(bestPath []position) {
-	for i := 0; i < len(*g); i++ {
-		for j := 0; j < len((*g)[i]); j++ {
-			isOnBestPath := false
-			for _, bestPathLocation := range bestPath {
-				p := position{x: j, y: i}
-				if bestPathLocation == p {
-					isOnBestPath = true
-					break
-				}
-			}
-			if isOnBestPath {
-				fmt.Printf("\x1b[104m%d\x1b[0m", (*g)[i][j])
-			} else {
-				fmt.Printf("\x1b[90m%d\x1b[0m", (*g)[i][j])
-			}
-		}
-		fmt.Println()
-	}
-	fmt.Println()
-}
-
-type position struct{ x, y int }
-type path struct {
-	location position
-	cost     int
-}
-
-func (g *grid) distances(x, y int) (m []path) {
-	m = []path{}
-	for _, n := range [][]int{{0, -1}, {0, 1}, {-1, 0}, {1, 0}} {
-		if x+n[1] < 0 || x+n[1] > len((*g)[0])-1 || y+n[0] < 0 || y+n[0] > len((*g))-1 { // valid range check
-			continue
-		}
-		m = append(m, path{location: position{x: x + n[1], y: y + n[0]}, cost: (*g)[y+n[0]][x+n[1]]})
-	}
-	return m
-}
-
-func (g *grid) solve(start position, end position) (bestPathCost int, bestPath []position) {
-	visited := map[position]bool{}
-	prev := map[position]position{}
-	bestPathCost = math.MaxInt
-	paths := pathPriorityQueue{}
-	distancesFromStart := map[position]int{}
-	for i := 0; i < len(*g); i++ {
-		for j := 0; j < len((*g)[i]); j++ {
-			distancesFromStart[position{x: j, y: i}] = math.MaxInt64
-		}
-	}
-	distancesFromStart[start] = 0
-	heap.Init(&paths)
-	heap.Push(&paths, &path{location: start, cost: 0})
-	for paths.Len() > 0 {
-		current := heap.Pop(&paths).(*path)
-		if visited[current.location] {
-			continue
-		}
-		visited[current.location] = true
-		nextMoves := g.distances(current.location.x, current.location.y)
-		for _, nextMove := range nextMoves {
-			if _, ok := visited[nextMove.location]; !ok || !visited[nextMove.location] {
-				if distancesFromStart[current.location]+nextMove.cost < distancesFromStart[nextMove.location] {
-					next := path{nextMove.location, current.cost + nextMove.cost}
-					distancesFromStart[nextMove.location] = distancesFromStart[current.location] + nextMove.cost
-					prev[nextMove.location] = current.location
-					heap.Push(&paths, &next)
-					if nextMove.location == end && next.cost < bestPathCost {
-						bestPathCost = next.cost
-					}
-				}
-			}
-		}
-	}
-	bestPath = []position{end}
-	for p1 := prev[end]; p1 != start; {
-		bestPath = append(bestPath, p1)
-		p1 = prev[p1]
-	}
-	bestPath = append(bestPath, start)
-	return bestPathCost, bestPath
-}
-
-func part1(g *grid) {
-	startTime := time.Now()
-	bestPathCost, bestPath := g.solve(position{0, 0}, position{x: len((*g)[0]) - 1, y: len(*g) - 1})
-	duration := time.Since(startTime)
-	fmt.Println("Part 1 Answer:", bestPathCost, "in", duration)
-	g.Print(bestPath)
-}
-
-func part2(g *grid) {
-	newGrid := extendGrid(g)
-	startTime := time.Now()
-	bestPathCost, bestPath := newGrid.solve(position{0, 0}, position{x: len((*newGrid)[0]) - 1, y: len(*newGrid) - 1})
-	duration := time.Since(startTime)
-	fmt.Println("Part 2 Answer:", bestPathCost, "in", duration)
-	newGrid.Print(bestPath)
-}
-
-func extendGrid(g *grid) *grid {
-	N := 5
-	newGrid := make([][]int, N*(len(*g)))
-	for i := 0; i < len(newGrid); i++ {
-		newGrid[i] = make([]int, N*len((*g)[0]))
-	}
-
-	for i := 0; i < len(*g); i++ {
-		for j := 0; j < len((*g)[i]); j++ {
-			newGrid[i][j] = (*g)[i][j]
-		}
-	}
-
-	X := len(*g)
-
-	// fill columns
-	for repeat := 1; repeat < N; repeat++ {
-		for i := 0; i < X; i++ { // X rows down
-			for j := 0; j < len((*g)[0]); j++ {
-				u := newGrid[i][(repeat-1)*X+j]
-				v := u + 1
-				if v > 9 {
-					v = 1
-				}
-				newGrid[i][repeat*X+j] = v
-			}
-		}
-	}
-
-	// fill rows
-	for repeat := 1; repeat < N; repeat++ {
-		for i := 0; i < X; i++ { // X rows
-			for j := 0; j < len(newGrid[0]); j++ {
-				u := newGrid[(repeat-1)*X+i][j]
-				v := u + 1
-				if v > 9 {
-					v = 1
-				}
-				newGrid[repeat*X+i][j] = v
-			}
-		}
-	}
-
-	return (*grid)(unsafe.Pointer(&newGrid))
-}
 
 func main() {
 	lib.AssertArgs()
-	lines := lib.AssertInput()
-	g1 := [][]int{}
-	g2 := [][]int{}
-	for _, line := range lines {
-		values, _ := lib.Convert(strings.Split(line, ""), strconv.Atoi)
-		g1 = append(g1, values)
-		g2 = append(g2, values)
+	g := grid(lib.AssertInputSingleDigitGrid())
+
+	fmt.Println(g.FindPath(lib.Point{Y: len(g) - 1, X: len(g[0]) - 1}, 1, 3))
+	fmt.Println(g.FindPath(lib.Point{Y: len(g) - 1, X: len(g[0]) - 1}, 4, 10))
+}
+
+func (m grid) FindPath(end lib.Point, minStraight, maxStraight int8) int {
+	pq := priorityQueue{}
+
+	// for part 1, doesn't affect part 2
+	heap.Push(&pq, &pqItem{step{
+		Point:         lib.Point{X: 0, Y: 0},
+		Direction:     lib.RIGHT,
+		StraightCount: 1,
+	}, 0})
+
+	// for part 2
+	heap.Push(&pq, &pqItem{step{
+		Point:         lib.Point{X: 0, Y: 0},
+		Direction:     lib.DOWN,
+		StraightCount: 1,
+	}, 0})
+
+	bestTotalHeatLoss := make([][][][4]int, len(m))
+	for y := range m {
+		bestTotalHeatLoss[y] = make([][][4]int, len(m[0]))
+		for x := range m[0] {
+			bestTotalHeatLoss[y][x] = make([][4]int, maxStraight)
+		}
 	}
 
-	// per https://stackoverflow.com/questions/29031353/conversion-of-a-slice-of-string-into-a-slice-of-custom-type
-	part1((*grid)(unsafe.Pointer(&g1)))
-	//part2((*grid)(unsafe.Pointer(&g2)))
+	for pq.Len() > 0 {
+		queued, _ := heap.Pop(&pq).(*pqItem)
+		step := queued.Step
+		point := step.Point
+		if point.Y < 0 || point.Y > end.Y || point.X < 0 || point.X > end.X {
+			continue
+		}
+
+		currentHeatLoss := int(m[point.Y][point.X]) + queued.TotalHeatLoss
+		if point == end {
+			if step.StraightCount < minStraight {
+				continue
+			}
+			return currentHeatLoss - int(m[0][0])
+		}
+
+		if bestTotalHeatLoss[point.Y][point.X][step.StraightCount-1][step.Direction] != 0 && bestTotalHeatLoss[point.Y][point.X][step.StraightCount-1][step.Direction] <= currentHeatLoss {
+			continue
+		}
+		bestTotalHeatLoss[point.Y][point.X][step.StraightCount-1][step.Direction] = currentHeatLoss
+
+		if step.StraightCount < maxStraight {
+			step.addStraight(&pq, currentHeatLoss)
+		}
+
+		if step.StraightCount >= minStraight {
+			step.addTurns(&pq, currentHeatLoss)
+		}
+	}
+
+	return -1
 }
 
-// A pathPriorityQueue implements heap.Interface and holds Items.
-type pathPriorityQueue []*path
-
-func (pq pathPriorityQueue) Len() int { return len(pq) }
-
-func (pq pathPriorityQueue) Less(i, j int) bool {
-	return pq[i].cost < pq[j].cost
+func (s step) addStraight(pq *priorityQueue, currentHeatLoss int) {
+	switch s.Direction {
+	case lib.UP:
+		heap.Push(pq, &pqItem{step{Point: lib.Point{X: s.Point.X, Y: s.Point.Y - 1}, Direction: lib.UP, StraightCount: s.StraightCount + 1}, currentHeatLoss})
+	case lib.DOWN:
+		heap.Push(pq, &pqItem{step{Point: lib.Point{X: s.Point.X, Y: s.Point.Y + 1}, Direction: lib.DOWN, StraightCount: s.StraightCount + 1}, currentHeatLoss})
+	case lib.LEFT:
+		heap.Push(pq, &pqItem{step{Point: lib.Point{X: s.Point.X - 1, Y: s.Point.Y}, Direction: lib.LEFT, StraightCount: s.StraightCount + 1}, currentHeatLoss})
+	case lib.RIGHT:
+		heap.Push(pq, &pqItem{step{Point: lib.Point{X: s.Point.X + 1, Y: s.Point.Y}, Direction: lib.RIGHT, StraightCount: s.StraightCount + 1}, currentHeatLoss})
+	}
 }
 
-func (pq pathPriorityQueue) Swap(i, j int) {
+func (s step) addTurns(pq *priorityQueue, currentHeatLoss int) {
+	switch s.Direction {
+	case lib.UP, lib.DOWN:
+		heap.Push(pq, &pqItem{step{Point: lib.Point{X: s.Point.X - 1, Y: s.Point.Y}, Direction: lib.LEFT, StraightCount: 1}, currentHeatLoss})
+		heap.Push(pq, &pqItem{step{Point: lib.Point{X: s.Point.X + 1, Y: s.Point.Y}, Direction: lib.RIGHT, StraightCount: 1}, currentHeatLoss})
+	case lib.LEFT, lib.RIGHT:
+		heap.Push(pq, &pqItem{step{Point: lib.Point{X: s.Point.X, Y: s.Point.Y - 1}, Direction: lib.UP, StraightCount: 1}, currentHeatLoss})
+		heap.Push(pq, &pqItem{step{Point: lib.Point{X: s.Point.X, Y: s.Point.Y + 1}, Direction: lib.DOWN, StraightCount: 1}, currentHeatLoss})
+	}
+}
+
+// satisfies heap.Interface and holds pqItems... see 2021 day 15
+// do not use pq.Push/Pop directly -- use heap.Push/Pop instead
+func (pq priorityQueue) Len() int { return len(pq) }
+
+func (pq priorityQueue) Less(i, j int) bool {
+	return pq[i].TotalHeatLoss < pq[j].TotalHeatLoss
+}
+
+func (pq priorityQueue) Swap(i, j int) {
 	pq[i], pq[j] = pq[j], pq[i]
 }
 
-func (pq *pathPriorityQueue) Push(x interface{}) {
-	item := x.(*path)
+func (pq *priorityQueue) Push(x interface{}) {
+	item := x.(*pqItem)
 	*pq = append(*pq, item)
 }
 
-func (pq *pathPriorityQueue) Pop() interface{} {
+func (pq *priorityQueue) Pop() interface{} {
 	old := *pq
 	n := len(old)
 	item := old[n-1]
 	old[n-1] = nil // avoid memory leak
 	*pq = old[0 : n-1]
 	return item
+}
+
+type priorityQueue []*pqItem
+
+type grid [][]int
+
+type step struct {
+	Point         lib.Point
+	Direction     lib.OrthogonalDirection
+	StraightCount int8
+}
+
+type pqItem struct {
+	Step          step
+	TotalHeatLoss int
 }

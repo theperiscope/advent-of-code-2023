@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 // returns program name
@@ -42,6 +43,18 @@ func AssertInputByteGrid() [][]byte {
 		byteSlices[i] = []byte(str)
 	}
 	return byteSlices
+}
+
+func AssertInputSingleDigitGrid() [][]int {
+	rows, err := ReadInput(os.Args[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	intSlices := make([][]int, len(rows))
+	for i, str := range rows {
+		intSlices[i], _ = Convert(strings.Split(str, ""), strconv.Atoi)
+	}
+	return intSlices
 }
 
 // reads line-by-line input from specified file
